@@ -22,6 +22,9 @@ The sea level was three inches higher in 2017 than the previous record in 1993.[
 >-The drainage systems on cities were designed for drain runoff waters from the streets and populates areas during the heavy rain event. The capacity for those drainage is not enough causing flooding impacting the urban with the economic loss. [8]
 >-The purpose of this study is to analyze data to extract information for finding the best course of action to prevent flooding in Miami Beach. The data include rain precipitation, sea level rise and the flow of the storm water drainage station of Miami Beach.
 
+
+![Street flooded](Images/streetFlooded.jpg)
+
 #**Methodology**
 >-This study pretends to cover the Miami Beach and coastal living zones. The summer in Miami is hot, wet and it rains frequently, usually from May to October, bringing heavy rainfall to the South peninsula. The heaviest rainfall month is September, and the driest month is January [11].
 >-This study will focus on flooding caused by rain events in Miami Dade County and how it causes rise in the sea level. This study will analyze the causes using the flooding analysis areas that the precipitation event and the tidal levels. Previous studies compare multiple Machine Learning algorithms that have been used to calculate probabilistic coastal flood [12]. The Data obtained covers all urbanized regions from Miami Dade County including Aventura, Bal Harbor, Bay Harbor Island, Biscayne Park, Coral Gables, Cutler Bay, Miami Beach, Miami Downtown, Doral, Hialeah, Medley, Florida City, all 42 cities from Miami Dade County this is because the raw data belongs from different points. 
