@@ -1,6 +1,9 @@
 # Capstone
 Climate Change Capstone Project
 
+![Miami Photo](Images/FLflood.jpg)
+
+
 ##**Problem Statement**
 
   Miami Beach is a sink risk coastal community. Local officials work on strategies to reduce the risk of flooding due to increased sea levels [3]. The government hope to bring awareness of the dangers of flooding due to low terrain, extreme rainfall, annual real tides, and storms. The city investment in public infrastructure to mitigate the risk including rainfall, storms and sea levels rise with the best of science to do so [3].
