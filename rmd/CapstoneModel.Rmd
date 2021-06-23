@@ -1,0 +1,201 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(class)
+library(caTools)
+library(caret)
+library(e1071)
+library(rpart)
+library(party)
+```
+
+```{r}
+mdcClCh <- read_csv("mdcClCh.csv")
+```
+```{r}
+summary(mdcClCh)
+```
+
+```{r}
+flood_d <- mdcClCh %>% 
+  mutate(mdcClCh, predictflood = ifelse(flood > 0, "flood", "not-flood"))
+```
+
+```{r}
+flood_d$predictflood <- factor(flood_d$predictflood, levels = c('flood', 'not-flood'))
+flood_d
+```
+
+
+```{r}
+datamodel <- flood_d %>% 
+  select(Monthly_MSL,PRCP, predictflood, flood)
+summary(datamodel)
+```
+
+```{r}
+preproc2 <- preProcess(datamodel[,c(1:2,3)], method=c("range"))
+ 
+norm2 <- predict(preproc2, datamodel[,c(1:2,3)])
+ 
+summary(norm2)
+
+```
+```{r}
+summary(datamodel)
+```
+
+
+```{r}
+minMaxNormalization <- function(vector){
+  
+  minMaxnormalized_vector <- c()
+  for(i in 1:length(vector)) {
+           minMaxnormalized_vector[i] = (vector[i] - min(vector)) / (max(vector) - min(vector))
+          
+  }
+  return(minMaxnormalized_vector)
+}
+datamodelN1 <- datamodel
+
+datamodelN1$Monthly_MSL <- minMaxNormalization(datamodelN1$Monthly_MSL)
+```
+
+
+
+```{r}
+str(norm2)
+```
+
+
+
+```{r}
+datamodel[,1:2] <- scale(datamodel[,1:2])
+```
+
+```{r}
+summary(datamodel)
+```
+
+```{r}
+#data%>% filter_at(vars("VARIABLES THAT HAVE NA THAT YOU DONT WANT"), all_vars(!is.na(.)))
+```
+
+
+
+```{r}
+#sample Data
+set.seed(123)
+norm2$Sample <- sample.split(norm2$predictflood, SplitRatio = .70)
+train <- subset(norm2, Sample == TRUE)
+test  <- subset(norm2, Sample == FALSE)
+```
+
+```{r}
+floodTrain
+```
+
+
+#Prepare Data for KNN
+```{r}
+floodTrain <- select(train, PRCP, Monthly_MSL)
+floodTest <- select(test, PRCP, Monthly_MSL)
+
+```
+#K Nearest Neighbors
+```{r}
+predicdflood <- knn(train = floodTrain,
+                      test = floodTest,
+                      cl = factor(train$predictflood),
+                      k = 1, prob = FALSE, use.all = F)
+```
+
+```{r}
+#logistic Model
+lgModel <- glm(formula = predictflood ~ PRCP + Monthly_MSL,
+               data = train,
+               family = binomial)
+summary(lgModel)
+```
+
+```{r}
+plot(lgModel)
+```
+
+
+
+```{r}
+#prediction
+test$floodProb <- predict(lgModel, test, type= "response")
+#view test
+test
+```
+
+```{r}
+summary(test)
+```
+```{r}
+ggplot(test, aes(x = floodProb, fill = predictflood )) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 8, show.legend = FALSE)
+```
+
+
+```{r}
+#include the new predic into Dataframe
+test <- mutate(test, predictiedflood = ifelse(floodProb < .31, "flood", "not-flood"))
+#convert the leveled factor
+test$predictiedflood <- factor(test$predictiedflood, levels = c("flood","not-flood"))
+test
+```
+```{r}
+ggplot(test, mapping = aes(x= Monthly_MSL,y = PRCP, fill = predictflood)) +
+  geom_point()
+```
+
+
+#Accuracy
+##confusion Matrix
+```{r}
+floodConfusion <- table(test$predictiedflood, test$predictflood)
+floodConfusion
+```
+```{r}
+#Generate Confusion MAtrix
+confflood <- confusionMatrix(test$predictiedflood, test$predictflood)
+confflood
+```
+```{r}
+as.table(confflood)
+```
+```{r}
+as.matrix(confflood, what = "overall")
+```
+```{r}
+as.matrix(confflood, what = "classes")
+```
+
+##Accuracy
+```{r}
+accuracyMesure <- sum(diag(floodConfusion)/ sum(rowSums(floodConfusion)))
+cat("Flood Accuracy:", accuracyMesure)
+```
+
+#Calculate Precision
+```{r}
+precisionflood <- precision(test$predictflood, test$predictiedflood)
+precisionflood
+```
+
+
+
+# Calculate RECALL
+```{r}
+recallflood <- recall(test$predictflood, test$predictiedflood)
+#To print the output
+cat("Precision:", precisionflood, "\n")
+cat("Recall:", precisionflood, "\n")
+```

@@ -1,0 +1,297 @@
+---
+title: "Climate Change"
+author: "Raul O Ramon-Rodriguez"
+date: "5/23/2021"
+output: html_notebook
+---
+
+
+## Climate Change Miami Beach
+
+
+# Problem
+
+Miami Beach is a sink risk coastal community. Local officials work on strategies to reduce the risk of flooding due to increased sea levels. The government hope to bring awareness of the dangers of flooding due to low terrain, extreme rainfall, annual real tides, and storms. The City investment in public infrastructure to mitigate the risk including rainfall, storms and sea levels rise with the best of science to do so [3]. The rise of sea levels caused by climate change presents a challenge for the water drainage system of the city. 
+
+Which areas of Miami Beach are currently under flood threat? What is the expected flood probability of each Miami Beach neighborhood? Given rain and weather conditions, which actions should be prescribed to different areas of Miami Beach to mitigate climate changes? 
+
+The City of Miami beach is the economic lung for Miami Dade county. The tourism and the high cost for real states and the keep rise without thinking about the sinking problem ahead. Is it critical? Yes, according to NOAA, 2015 the sea level rise is projected to be 6 to 10 inches by 2030 and 14 to 26 inches by 2060. The solution for this challenge is to evaluate the flow of the storm water drainage stations it can pump out the water bringing down flood waters from the city. The effect will affect 13.1 million people and Miami-Dade and Broward Counties alone account for more than a quarter of this number of populations [4].
+
+
+
+# Background
+
+Climate change
+
+The Earthâs climate has undergone continuous changes over the last half million years. According to NASA, there have been seven cycles of glacial eras, with the last ice age marking the start of the modern new climate era of human civilizations. These climate changes are the result of small alterations in the Earthâs orbit that change the quantity of solar light it receives. [1]
+Rainfall incidents in the United States are increasing. All-time records for rainfall have surged recently intensifying flooding events. In the last century, global sea levels have risen by about 8 inches. However, the rate in the last two decades has been almost double that of the last century and has increased slightly each year. [2]
+
+Miami Beach is a sink risk coastal community. Local officials work on strategies to reduce the risk of flooding due to increased sea levels. The government hope to bring awareness of the dangers of flooding due to low terrain, extreme rainfall, annual real tides, and storms. The City has invested in public infrastructure to mitigate the risk of rainfall, storms and sea levels rise with the best of science to do so. The public work is installing stormwater walls, creating higher elevations standards, and maintain the dune system.[3] The rise of sea levels caused by climate change presents a challenge for the water drainage system of the city. The City of Miami beach is the economic lung for Miami Dade county. The tourism and the high cost for real states and the keep rise without thinking about the sinking problem ahead.
+
+According to NOAA, 2015 the sea level rise is projected to be 6 to 10 inches by 2030 and 14 to 26 inches by 2060. [4] The solution for this challenge is to evaluate the flow of the storm water drainage stations and how fast it can pump out the water to bring down flood waters from the city. The Flooding will affect 13.1 million people and Miami-Dade and Broward counties alone.
+In the Fall 2017 South Florida has suffer major tides flooding called king tides. The tides are caused by the gravity of the moon which pulls the ocean towards it. Because of the Earthâs rotation, the moon is pulling the ocean in different directions, which causes high and low tides.[5]
+Around 40 percent of USA population live near the coast. More than 600 million people in the world live within 10 meters of the sea level by 2000.[6] The property value in Miami Beach continues to increase despite the facts that houses, and high-rise buildings constructed near the beach are at a constant risk due to water level rising. [9]
+
+The sea level was three inches higher in 2017 than the previous record in 1993.[5] One rare event for 2017 was La NiÃ±a that start late in the year and the event was barely weak. La NiÃ±a I the event that the water gets cold significantly reducing the volume of the water and the level of the sea drop. Some case that La NiÃ±a get strong the sea level drop below the average.[6]
+
+The tides are accurately predictable for practical purpose, but the storm cause high tides that are not on the same prediction and contributes for flooding damages [7]. The Flood can be considered as a natural disaster that has caused damages in different cities. The characteristic of the population and their dimension cause more difficult to prepare the communities for the natural disaster [10].
+
+The drainage systems on cities were designed for drain runoff waters from the streets and populates areas during the heavy rain event. The capacity for those drainage is not enough causing flooding impacting the urban with the economic loss. [8]
+
+The purpose of this study is to analyze data to extract information for finding the best course of action to prevent flooding in Miami Beach. The data include rain precipitation, sea level rise and the flow of the storm water drainage station of Miami Beach.
+
+
+
+
+#Data Exploratory
+```{r}
+# install.packages("tidyverse")
+# install.packages("corrplot")
+# install.packages("caTools")
+# install.packages("caret")
+# install.packages("forecast")
+# install.packages("lubridate")
+```
+
+Load Libraries
+```{r}
+library(tidyverse)
+library(corrplot)
+library(caTools)
+library(caret)
+library(forecast)
+library(lubridate)
+```
+
+Load Data File
+```{r}
+library(readr)
+PrecipitationMiami <- read_csv("PrecipitationMiami.csv")
+head(PrecipitationMiami)
+```
+
+Rename Variables and Change data 
+
+```{r}
+precipit_data <- PrecipitationMiami %>%
+            rename(WIND_SPEED = AWND,
+                   TIME_PEAK_GUST = PGTM,
+                   RAIN = PRCP,
+                   SNOW = SNOW,
+                   TEMP_AVG = TAVG,
+                   TEMP_MAX = TMAX,
+                   TEMP_MIN = TMIN,
+                   OBS_TEMP = TOBS,
+                   DIR_2MIN_WIND = WDF2,
+                   DIR_5MIN_WIND = WDF5,
+                   FAST_2MIN_WIND = WSF2,
+                   FAST_5MIN_WIND = WSF5,
+                   ) %>%
+            mutate(STATION = as.factor(STATION),
+                   DATE = as.Date(DATE, "%m/%d/%Y"),
+                   NAME = as.factor(NAME),
+                   ELEVATION = as.factor(ELEVATION),
+                   )
+precipit_data
+```
+
+```{r}
+rainy_days0 <- precipit_data %>%
+  filter(RAIN > 0)
+summary(rainy_days0)
+```
+
+
+```{r}
+rainy_days_third_quartile <- precipit_data %>%
+  filter(RAIN > 0.62)
+summary(rainy_days_third_quartile)
+```
+
+
+#Rain Presipitation in Miami Jan 2021 to May 2021
+The following figures show how is the distribution of rain presipitation in Miami for the begining of the year 2021. The first figure, we can observe that the amount of rain presipitation is very low for the first half of the year2021. 
+```{r}
+rain <- ggplot(rainy_days0, aes(x = PRCP, fill = STATION)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 8, show.legend = FALSE) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())+
+  labs(title = "Boxplot:Presipitation in Miami Beach (2021 Jan-May)",
+       subtitle = "Colored by Substation",
+       x = "Rain (in)",
+       caption = "Source: NOAA")
+rain
+```
+ 
+
+
+
+```{r}
+ggplot(rainy_days_third_quartile, aes(y = NAME, x = RAIN, fill = NAME)) +
+  geom_col(show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle =90)) +
+  labs(title = "Rain by Station in Miami Beach",
+       subtitle = "Jan - May, 2021",
+       x = "Station",
+       y = "Rain Precipitation (ml)",
+       caption = "Source: NOAA")
+```
+
+The Above figure show the distribution of the rain precipitation in differents rain station in the Miami area. We can observe that the mesure in milimeter round around the 15 to 20 ml with the exception of two stations.
+
+
+
+The Density figure show frequent presipitation by station in Miami Dade county
+```{r}
+ggplot(rainy_days_third_quartile, aes(x = RAIN , fill = NAME, alpha = 0.7)) +
+  geom_density(show.legend = FALSE) +
+  labs(title = "Density: Rain presipitation per Station",
+       subtitle = "Miami Beach",
+       x = " Rain Presipitation",
+       y = "Density",
+       caption = "Source: NOAA")
+```
+
+Sea Level
+
+```{r}
+library(readr)
+SealevelKeywest <- read_csv("SealevelKeywest.csv")
+head(SealevelKeywest)
+```
+
+
+The following Figure show the sea level in Miami cost since 1913 to April 2021. We can observe that the sea level was very low until the begining of 80's. If we observe the figure very carefully, we can apreciate that the sea level increase very fast since the 90's century and the 2000 rise more fast.
+
+```{r}
+ggplot(SealevelKeywest, aes(x = Year, y = Monthly_MSL, fill = Month)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = "Sea Level Rise in Miami Coast",
+       subtitle = "Jan 1913 - April, 2021",
+       x = "Year",
+       y = "Mean Sea Level Rise",
+       caption = "Source: NOAA")
+```
+
+
+Stormwater Line 
+
+```{r}
+library(readr)
+Stormwater_Line <- read_csv("Stormwater_Line.csv")
+head(Stormwater_Line)
+```
+
+```{r}
+stormwater <- Stormwater_Line 
+stormwater[,sapply(stormwater, is.character)] <- lapply(stormwater[,sapply(stormwater, is.character)], as.factor)
+stormwater
+```
+
+
+Facts:
+Vertical Datums
+A vertical datum is a surface of zero elevation to which heights of various points are referenced. The North American vertical datum is the reference for the level zero in Miami and other place in USA better known as NAVD-88.  The expected relation for the datum 1 and datum 2 it should be negative. The datum 1 should be always higher than the datum 2. [13]
+
+
+The following figure show us that the vertical datums do not run completely positive. The meaning of this is that the level of the line that carry the stormwater in the rain event should be positive all time. This situation causes that the pipeline can hold water, sand, and other materials like trash, resulting in standing water causing floods everywhere. 
+
+```{r}
+ggplot(stormwater, aes(x = INVERT_Z1,y = INVERT_Z2,color = BASIN)) +
+  geom_point() +
+  labs(title = "Change in water level by Vertical Datum",
+       subtitle = "Storm Water Line in Miami",
+       x = "Datum level1",
+       y = "Datum level2",
+       caption = "Source: Miami Dade County")
+```
+
+
+
+#Methodology
+This study pretends to cover the Miami Beach and coastal living zones. The summer in Miami is hot, wet and it rains frequently, usually from May to October, bringing heavy rainfall to the South peninsula. The heaviest rainfall month is September, and the driest month is January [11].
+
+This study will focus on flooding caused by rain events in Miami Dade County and how it causes rise in the sea level. This study will analyze the causes using the flooding analysis areas that the precipitation event and the tidal levels. Previous studies compare multiple Machine Learning algorithms that have been used to calculate probabilistic coastal flood [12]. The Data obtained covers all urbanized regions from Miami Dade County including Aventura, Bal Harbor, Bay Harbor Island, Biscayne Park, Coral Gables, Cutler Bay, Miami Beach, Miami Downtown, Doral, Hialeah, Medley, Florida City, all 42 cities from Miami Dade County this is because the raw data belongs from different points. 
+The variables that we are going to use for the analysis (rainfall, tide, vertical datum) were used in other studies [12],[14]. The data was obtained from the Miami Dade County Open Data Hub ( Florida, Miami-Dade County, MDC, County Government, https://gis-c.opendata.arcgis.com/search?tags=Environment), NOAA ( National Oceanic and Atmospheric Administration, Center for Operational Oceanographic product and Service). The variables were joined by day. We are going to split the data into the training (70%) and test (30%) for the respectively analysis. The variables were standardized from 0-1. Our initial proposal was to implement the k-nearest neighbor (kNN). The Sang study implements three ML algorithms: k nearest Neighbor (kNN), random forest (RF) and Support Vector Machine (SVM) [12].  The analysis for his study was best when the k was set to 5, so our project going to set the k to 5 using the kNN ML Algorithm because is the coastal flood risk analyses performed by Sang the result of KNN show the highest accuracy and reliability [12].
+
+Upon executing the k-nearest neighbor (kNN) the model confronted problem related to the “too many ties in knn” error which prevented it from producing the desired result. The decision was to implement new methodology model. We moved to use a general linear model (GLM) as the Venderberg-Rodes study that he uses GLM to estimate the frequency of nuisance floods associated with the change in mean sea level [17].
+
+Using the same parameter previously mentioned for the KNN, the data fit for the new model. The general linear model we specify the observation for the datum as flood or not-flood as a predictor variable and to contrast with precipitation and sea level. 
+
+
+#Result and Discusion
+
+#Result
+```{r}
+#logistic Model
+lgModel <- glm(formula = predictflood ~ PRCP + Monthly_MSL,
+               data = train,
+               family = binomial)
+summary(lgModel)
+```
+  Linear Model Regression
+*Intercept: the log-odds of survival for flood or not-flood (reference group) is -1.16.
+
+*For each of the other variables like precipitation (PRPC) and Sea Level (MSL), the coefficient tells us that the log-odds of survival for a PRCP is smaller than that of the reference group, and the MSL is higher with -0.91 and 0.61 respectively.
+
+*Given p<0.5, we can reject the null hypothesis (b1=0) that there is no difference in the log-odds between flood or not-flood. 
+
+
+```{r}
+confflood <- confusionMatrix(test$predictiedflood, test$predictflood)
+confflood
+```
+
+
+  Confusion Matrix
+  
+	We can conclude that:
+	
+*Accuracy value of 54% means that identification that 137,540 of the total flood events is correct, and 117,229 is incorrect.
+
+*Precision value of 57% means that label of 179,270 of 254,769 of the total event is flood.
+
+*Recall value is 40% means that 102799 of every 254,769 event, in reality, are missed by our model and 60% are correctly identified as a flood event.
+
+*Specificity value is 46% means that 34,741of every 254,769flood event in reality are miss-labeled as flood.
+
+#Discussion
+
+I have used the General Linear Model (GLM) so that the count of the data is running effectively, for the non-parametric modelling, where the variability of the datum (level of flooding) project to rise fundamentally beyond the accessible information on which the model was prepare [17]. 
+
+
+
+# Reference
+
+[1] https://climate.nasa.gov/evidence/
+
+[2] https://www.climate.gov/news-features/understanding-climate/climate-change-global-sea-level
+
+[3] https://www.miamibeachfl.gov/wp-content/uploads/2018/02/Flood-Awareness-Guide-8.pdf
+
+[4] Southeast Florida Regional Climate Change Compact Sea Level Rise Work Group (Compact). October 2015. Unified Sea Level Rise Projection for Southeast Florida. A document prepared for the Southeast Florida Regional Climate Change Compact Steering Committee. 35 p.
+
+[5] Tom Di Liberto, King tides cause flooding in Florida in fall 2017, NOAA Climate.gov, November 8, 2017, Available: https://www.climate.gov/news-features/event-tracker/king-tides-cause-flooding-florida-fall-2017
+
+[6] Michon Scott, Rebecca Lindsey, 2017 State of the climate: Sea Level, NOAA Climate. gov, August 1, 2018, Available: https://www.climate.gov/news-features/featured-images/2017-state-climate-sea-level
+
+[7] Flick, R E, California tides, sea level, and waves â Winter 2015-2016, Shore & Beach, 84(2), 2016, Available: https://escholarship.org/uc/item/4p82t4mt
+
+[8] MI pale Kyi, Dr. Win Win Zin, U Tin Maung, Study on Drainage Capacity by using Modified Rational Method and Storm Water Management Model, INTERNATIONAL JOURNAL FOR INNOVATIVE RESEARCH IN MULTIDISCIPLINARY FIELD ISSN: 2455-0620 Volume - 3, Issue - x, xxxx â 2017, 2017, Available: https://www.researchgate.net/publication/328576703
+
+[9] Jesse M Keenan et al, Climate gentrification: from theory to empiricism in Miami-Dade County, Florida, 2018 Environ. Res. Lett. 13 054001
+
+[10] Noori, M., Rezaei, M.R., Asgari, E. (2020). Structural-Interpretive Modeling Factors Affecting the Physical and Social Resilience of Shiraz to Natural Disasters of Flood. Journal of Urban Social Geography, 7(2), 149-172. (In Persian)
+
+[11] https://weather-and-climate.com/average-monthly-precipitation-Rainfall-inches,Miami,United-States-of-America
+
+[12] Sang-Jin Park, Dong-Kung Lee (2020) Prediction of coastal flooding risk under climate change impacts in South Korea Using machine learning algorithms, Environmental Research Letters, 15. (2020) 094052.
+
+[13] J.H. Keysers, N.D. Quadros, P.A. Collier, Developing a method to establish a common vertical datum before integrating land height data with near‐ shore seafloor depth data, Report prepared for the Commonwealth Government of Australia, Department of Climate Change and Energy Efficiency
+
+[14] Bjorn L ¨ utjens, et.al, (2021) Physically-Consistent Generative Adversarial Networks for Coastal Flood Visualization, IEEE. may2021
+
+[15] Reza Marsooli, et.al, Climate change exacerbates hurricane flood hazards along US Atlantic and Gulf Coasts in spatially varying patterns, (2019), Nature Communications, (2019) 10:3785 | https://doi.org/10.1038/s41467-019-11755-z | www.nature.com/naturecommunications
+
+[16] Miami Dade County Open Data Hub (Florida, Miami-Dade County, MDC, County Government, https://gis-dc.opendata.arcgis.com/search?tags=Environment)
+

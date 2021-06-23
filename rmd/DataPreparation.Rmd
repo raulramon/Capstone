@@ -1,0 +1,206 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(readr)
+stormwater_feature_selection <- read_csv("stormwater_feature_selection.csv")
+stormwater_feature_selection
+```
+
+```{r}
+summary(stormwater_feature_selection)
+```
+
+```{r}
+sw <- stormwater_feature_selection 
+sw$Month <- match(sw$Month, month.abb)
+sw
+```
+
+```{r}
+swBa <- sw %>% 
+  mutate(Year = Year + 2000)
+swBa
+```
+```{r}
+sw$Year <- as.numeric(sw$Year)
+sw$Month <- as.numeric(sw$Month)
+sw
+```
+
+```{r}
+swBa$ym <- as.numeric(paste(swBa$Year, swBa$Month, sep = ""))
+swBa
+```
+
+```{r}
+swBa_setected <- swBa %>% 
+  select(LENGTH,INVERT_Z1, INVERT_Z2, MATERIAL, ym)
+swBa_setected
+```
+
+```{r}
+swBa_flood <- swBa_setected %>% 
+  mutate(flood = INVERT_Z2-INVERT_Z1/LENGTH)
+swBa_flood
+```
+
+```{r}
+swBa_flood <- na.omit(swBa_flood)
+swBa_flood
+```
+
+```{r}
+precipitationMDCdata <- read_csv("precipitationMDCdata.csv")
+precipitationMDCdata
+```
+
+
+
+```{r}
+precipitationMDCdata$ym <- format(as.Date(precipitationMDCdata$DATE), "%Y%m")
+precipitationMDCdata
+```
+
+
+```{r}
+summary(precipitationMDCdata)
+```
+
+```{r}
+precipitationMDC2010 <- na.omit(precipitationMDCdata)
+summary(precipitationMDC2010)
+```
+```{r}
+precipitationMDC2010$ym <- as.numeric(precipitationMDC2010$ym)
+summary(precipitationMDC2010)
+```
+
+
+
+```{r}
+precipMiami_data <- read_csv("precipMiami_data.csv")
+precipMiami_data
+```
+
+
+```{r}
+prepMDC <- precipMiami_data %>% 
+  dplyr::mutate(year = lubridate::year(DATE),
+                month = lubridate::month(DATE),
+                day = lubridate::day(DATE))
+prepMDC
+```
+```{r}
+prepMDC$ym <- as.numeric(paste(prepMDC$year, prepMDC$month, sep = ""))
+prepMDC
+```
+
+```{r}
+summary(prepMDC)
+```
+
+```{r}
+precipitationMDC2021 <- na.omit(prepMDC)
+summary(precipitationMDC2021)
+```
+
+```{r}
+precipMDC2010 <- as.data.frame(precipitationMDC2010)
+precipMDC2021 <- as.data.frame(precipitationMDC2021)
+```
+
+```{r}
+precipitationMDC2010 %>% 
+  select(STATION, DATE, PRCP, STATE, COUNTY, ym)
+precipitationMDC2010
+```
+```{r}
+precipitationMDC2021 %>% 
+  select(STATION, DATE, PRCP, STATE, COUNTY, ym)
+precipitationMDC2021
+```
+```{r}
+library(dplyr)
+```
+
+```{r}
+precipAll <- bind_rows(precipitationMDC2010, precipitationMDC2021)
+precipAll
+```
+
+```{r}
+prcpALL <- precipAll %>% 
+  select(STATION, DATE, PRCP, STATE, COUNTY, ym)
+```
+
+```{r}
+na.omit(precipAll)
+```
+
+
+```{r}
+summary(prcpALL)
+```
+
+
+
+
+
+```{r}
+seaLevel <- read_csv("seaLevel.csv")
+summary(seaLevel)
+```
+
+```{r}
+seaLevel
+```
+
+```{r}
+seaLevelM <- seaLevel %>% 
+  filter(Year > 1999)
+seaLevelM
+```
+
+
+
+```{r}
+seaLevelM$ym <- as.numeric(paste(seaLevelM$Year, seaLevelM$Month, sep = ""))
+seaLevelM
+```
+
+
+```{r}
+mdcClimate <- merge(seaLevelM,prcpALL, by.x = 'ym', by.y = 'ym', all.x = TRUE, all.y = TRUE)
+mdcClimate
+```
+
+
+
+```{r}
+mdcClimateCH <- merge(mdcClimate, swBa_flood, by.x = 'ym', by.y = 'ym', all.x = TRUE, all.y = TRUE)
+mdcClimateCH
+```
+
+```{r}
+summary(mdcClimateCH)
+```
+
+```{r}
+mdcClCh <- na.omit(mdcClimateCH)
+mdcClCh
+```
+
+```{r}
+summary(mdcClCh)
+```
+
+```{r}
+write.csv(mdcClCh, 'mdcClCh.csv')
+```
+

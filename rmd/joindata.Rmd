@@ -1,0 +1,351 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+for(i in 1:4){
+  if(i == 1){
+    
+    precipitation_MDC_data <- read.csv("https://raw.githubusercontent.com/reneovillarreal/Fundamentals-of-Big-Data/main/Data/MDC-1.csv")%>% select(STATION,
+                                                                                                                                              STATE,
+                                                                                                                                              COUNTY,
+                                                                                                                                              DATE,
+                                                                                                                                              PRCP)
+    
+  }else{
+    
+    temp <- read.csv(paste0("https://raw.githubusercontent.com/reneovillarreal/Fundamentals-of-Big-Data/main/Data/MDC-",i,".csv")) %>% select(STATION,
+                                                                                                                                              STATE,
+                                                                                                                                              COUNTY,
+                                                                                                                                              DATE,
+                                                                                                                                              PRCP)
+    
+    rbind(precipitation_MDC_data,temp)
+  }
+  
+  
+}
+```
+
+```{r}
+precipitation_MDC_data
+```
+
+
+```{r}
+dates <- precipitation_MDC_data %>%
+  mutate(DATE = as.Date(DATE, "%m/%d/%Y"))
+  
+```
+
+
+```{r}
+dates
+```
+```{r}
+seaLevel <- SealevelKeywest %>% 
+  mutate(DATE = make_date(Year, Month)) 
+seaLevel 
+#write.csv(seaLevel, 'seaLevel.csv')
+```
+
+```{r}
+Stormwater_Line <- read_csv("~/Capstone/Stormwater_Line.csv")
+Stormwater_Line$SOURCEDATE[1]
+```
+```{r}
+Stormwater_Line
+```
+
+```{r}
+StormWater_SelectedYears <- Stormwater_Line[Stormwater_Line$SOURCEDATE %in% c("Jan-10", "Feb-10",
+                                                  "Apr-10", "Mar-10","May-10",
+                                                  "Jun-10", "Jul-10","Aug-10",
+                                                  "Sep-10","Oct-10", "Nov-10", "Dec-10",
+                                                  "Jan-11", "Feb-11",
+                                                  "Apr-11", "Mar-11","May-11",
+                                                  "Jun-11", "Jul-11","Aug-11",
+                                                  "Sep-11","Oct-11", "Nov-11", "Dec-11",
+                                                  "Jan-12", "Feb-12",
+                                                  "Apr-12", "Mar-12","May-12",
+                                                  "Jun-12", "Jul-12","Aug-12",
+                                                  "Sep-12","Oct-12", "Nov-12", "Dec-12",
+                                                  "Jan-13", "Feb-13",
+                                                  "Apr-13", "Mar-13","May-13",
+                                                  "Jun-13", "Jul-13","Aug-13",
+                                                  "Sep-13","Oct-13", "Nov-13", "Dec-13",
+                                                  "Jan-14", "Feb-14",
+                                                  "Apr-14", "Mar-14","May-14",
+                                                  "Jun-14", "Jul-14","Aug-14",
+                                                  "Sep-14","Oct-14", "Nov-14", "Dec-14",
+                                                  "Jan-15", "Feb-15",
+                                                  "Apr-15", "Mar-15","May-15",
+                                                  "Jun-15", "Jul-15","Aug-15",
+                                                  "Sep-15","Oct-15", "Nov-15", "Dec-15",
+                                                  "Jan-16", "Feb-16",
+                                                  "Apr-16", "Mar-16","May-16",
+                                                  "Jun-16", "Jul-16","Aug-16",
+                                                  "Sep-16", "Oct-16", "Nov-16", "Dec-16",
+                                                  "Jan-17", "Feb-17",
+                                                  "Apr-17", "Mar-17","May-17",
+                                                  "Jun-17", "Jul-17","Aug-17",
+                                                  "Sep-17","Oct-17", "Nov-17", "Dec-17",
+                                                  "Jan-18", "Feb-18",
+                                                  "Apr-18", "Mar-18","May-18",
+                                                  "Jun-18", "Jul-18","Aug-18",
+                                                  "Sep-18","Oct-18", "Nov-18", "Dec-18",
+                                                  "Jan-19", "Feb-19",
+                                                  "Apr-19", "Mar-19","May-19",
+                                                  "Jun-19", "Jul-19","Aug-19",
+                                                  "Sep-19","Oct-19", "Nov-19", "Dec-19",
+                                                  "Jan-20", "Feb-20",
+                                                  "Apr-20", "Mar-20","May-20",
+                                                  "Jun-20", "Jul-20","Aug-20",
+                                                  "Sep-20","Oct-20", "Nov-20", "Dec-20")
+  ,]
+```
+
+
+```{r}
+
+arepa <- str_split(StormWater_SelectedYears$SOURCEDATE, pattern = "-")
+arepa2 <- unlist(arepa)
+
+arepa2
+```
+
+```{r}
+even.positions <- function(vector){
+  
+  
+  even <- c()
+  
+  j <- 1
+  
+  for(i in 1:length(vector)){
+    
+    if(i %% 2 == 0){
+      
+      even[j] <- i
+      
+      j <- j + 1
+      
+      
+    }else{
+      
+      
+      
+    }
+    
+    
+    
+  }
+  
+  return(even)
+  
+} # end of even.position
+
+
+
+odd.positions <- function(vector){
+  
+  
+  odd <- c()
+  
+  j <- 1
+  
+  for(i in 1:length(vector)){
+    
+    if(i %% 2 == 0){
+      
+      
+    }else{
+      
+      odd[j] <- i
+      
+      j <- j + 1
+      
+    }
+    
+    
+    
+  }
+  
+  return(odd)
+  
+} # end of odd.positions
+```
+
+
+```{r}
+even.values <- function(x){
+  
+  even_positions <- even.positions(x)
+  
+  j <- 1
+  
+  for(i in even_positions){
+    if(j == 1){
+      
+      final <- c(x[i])
+      
+      
+    }else{
+      
+      final[j] <- x[i]
+      
+    }
+    
+    j <- j + 1
+    
+    
+    
+  }
+  return(final)
+}
+```
+
+
+```{r}
+odd.values <- function(x){
+  
+  even_positions <- odd.positions(x)
+  
+  j <- 1
+  
+  for(i in even_positions){
+    if(j == 1){
+      
+      final <- c(x[i])
+      
+      
+    }else{
+      
+      final[j] <- x[i]
+      
+    }
+    
+    j <- j + 1
+    
+    
+    
+  }
+  return(final)
+}
+```
+
+
+```{r}
+cervesa <- c(arepa2[1])
+cervesa[2] <- arepa2[3]
+cervesa
+```
+
+
+```{r}
+even.values(arepa2)
+```
+
+
+```{r}
+
+ #stormwater$SOURCEDATE <-  format(as.Date("Jan-09", format = "%b-%y"),"%m-%Y")
+stormwater_feature_selection <-  StormWater_SelectedYears %>%
+  select(ID, TYPE, LENGTH, DIAMETER, INVERT_Z1, INVERT_Z2, MATERIAL, MUNIC_NAME, BASIN, Shape__Length, SOURCEDATE, Year, Month) 
+stormwater_feature_selection
+```
+
+
+```{r}
+write.csv(stormwater_feature_selection, 'stormwater_feature_selection.csv')
+```
+
+
+
+```{r}
+StormWater_SelectedYears$Year <- even.values(arepa2)
+StormWater_SelectedYears$Month <- odd.values(arepa2)
+```
+
+```{r}
+StormWater_SelectedYears
+```
+
+
+```{r}
+precipit_data
+SealevelKeywest
+stormwater
+```
+
+```{r}
+precipMiami <-  precipit_data %>% 
+  select(STATION, DATE, RAIN) %>% 
+  mutate(STATE = "Florida", COUNTY = "Miami Dade",
+         DATE = as.Date(DATE, "%m/%d/%Y")) %>% 
+  rename(PRCP = RAIN)
+precipMiami
+```
+
+```{r}
+write.csv(dates, 'precipitationMDCdata.csv')
+```
+
+```{r}
+precMDC <- precipitationMDCdata %>% 
+  select(STATION, DATE, PRCP, STATE, COUNTY)
+precMDC
+```
+
+
+```{r}
+precipitationMDCdata <- read_csv("precipitationMDCdata.csv")
+precipitationMDCdata
+```
+
+```{r}
+alldataprepMDC <-  rbind(precipMiami, precMDC)
+alldataprepMDC
+```
+
+
+```{r}
+summary(alldataprepMDC)
+```
+
+
+precipMiami   precipitationMDCdata
+```{r}
+allPrep <- merge(precipMiami, precMDC)
+allPrep
+```
+
+
+
+
+```{r}
+write.csv(precipMiami, 'precipMiami_data.csv')
+```
+
+```{r}
+precipMiami_data <- read_csv("precipMiami_data.csv")
+precipMiami_data
+```
+
+
+```{r}
+DataFramePrep <- list.files(pattern = "*.csv") %>% lapply(read_csv) %>% 
+  bind_rows()
+```
+
+
+```{r}
+Dataframe <- list.files(pattern ='.csv') %>% lapply(read_csv) %>% bind_rows
+```
+

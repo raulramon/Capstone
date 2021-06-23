@@ -1,0 +1,253 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+
+
+```{r}
+sw <- stormwater_feature_selection
+  
+sw
+```
+
+
+
+
+
+```{r}
+swBa <- sw %>% 
+  mutate(Year = Year + 2000)
+swBa
+```
+
+
+
+```{r}
+numMonth <- function(x) {
+    months <- list(jan=1,feb=2,mar=3,apr=4,may=5,jun=6,jul=7,aug=8,sep=9,oct=10,nov=11,dec=12)
+    x <- tolower(x)
+    sapply(x,function(x) months[[x]])
+}
+
+numMonth(c('JAN','DEC'))
+```
+```{r}
+#sw <- as.Date.character(sw$Month, format = "%b", "%m")
+sw$Month <- match(sw$Month, month.abb)
+sw
+```
+```{r}
+sw$Year <- as.numeric(sw$Year)
+sw$Month <- as.numeric(sw$Month)
+sw
+```
+
+```{r}
+swBa$ym <- as.numeric(paste(swBa$Year, swBa$Month, sep = ""))
+swBa
+```
+
+```{r}
+swBa_setected <- swBa %>% 
+  select(LENGTH,INVERT_Z1, INVERT_Z2, MATERIAL, ym)
+swBa_setected
+
+```
+
+
+
+```{r}
+precipitationMDCdata
+```
+```{r}
+precipitationMDCdata$Month_Yr <- format(as.Date(precipitationMDCdata$DATE), "%Y-%m")
+precipitationMDCdata
+
+```
+
+```{r}
+predate <- precipitationMDCdata %>% 
+  mutate(DATE = ymd(date)) %>% 
+  mutate_at(vars(date), funs(year, month, day))
+predate 
+```
+
+```{r}
+alldataprepMDC
+```
+
+
+
+
+```{r}
+prepMDC <- alldataprepMDC %>% 
+  dplyr::mutate(year = lubridate::year(DATE),
+                month = lubridate::month(DATE),
+                day = lubridate::day(DATE))
+prepMDC
+```
+
+```{r}
+prepMDC$ym <- as.numeric(paste(prepMDC$year, prepMDC$month, sep = ""))
+prepMDC
+```
+```{r}
+prepMDC <- filter(prepMDC, PRCP > 0)
+prepMDC
+```
+
+```{r}
+summary(prepMDC)
+```
+
+
+```{r}
+seaLevel
+```
+
+
+```{r}
+seaLevelM <- seaLevel %>% 
+  filter(Year > 1999)
+seaLevelM
+```
+
+
+
+
+```{r}
+seaLevelM$ym <- as.numeric(paste(seaLevelM$Year, seaLevelM$Month, sep = ""))
+seaLevelM
+```
+
+```{r}
+mdcClimate <- merge(seaLevelM,prepMDC, by.x = 'ym', by.y = 'ym', all.x = TRUE, all.y = TRUE)
+```
+
+```{r}
+mdcClimate
+```
+
+
+```{r}
+summary(mdcClimate)
+```
+
+```{r}
+mdcClimateCH <- merge(mdcClimate, swBa_setected, by.x = 'ym', by.y = 'ym', all.x = TRUE, all.y = TRUE)
+mdcClimateCH
+```
+
+```{r}
+library(readr)
+rainy_days <- read_csv("rainy_days.csv")
+```
+
+
+```{r}
+rainy_days
+```
+
+```{r}
+rainy_daysCal <- rainy_days %>% 
+  mutate(flood = INVERT_Z2-INVERT_Z1/LENGTH)
+rainy_daysCal
+```
+```{r}
+summary(rainy_days)
+```
+```{r}
+rainy_daysCal1 <- rainy_daysCal %>% 
+  mutate(rainy_daysCal, predictflood = ifelse(flood > 0, "flood", "not-flood"))
+```
+
+```{r}
+rainy_daysCal1$predictflood <- factor(rainy_daysCal1$predictflood, levels = c('flood', 'not-flood'))
+rainy_daysCal1
+```
+
+```{r}
+summary(rainy_daysCal1)
+```
+
+```{r}
+rainyDCa <- na.omit(rainy_daysCal1)
+rainyDCa
+```
+
+
+```{r}
+datamodel <- rainy_daysCal1 %>% 
+  select(Monthly_MSL,PRCP, predictflood)
+summary(datamodel)
+```
+
+
+```{r}
+write.csv(rainy_days, 'rainy_days.csv')
+```
+
+
+```{r}
+rainy_days <- mdcClimateCH %>%
+  filter(PRCP > 0)
+summary(rainy_days)
+```
+
+```{r}
+Length <- rainy_days %>%
+  filter(LENGTH  > 0)
+summary(Length)
+```
+
+
+```{r}
+ggplot(rainyDCa, aes(x = PRCP, fill = STATION)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 8, show.legend = FALSE) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())+
+  labs(title = "Boxplot:Presipitation in Miami Beach (2020 Jan-May)",
+       subtitle = "Colored by Substation",
+       x = "Rain (in)",
+       caption = "Source: NOAA")
+```
+
+```{r}
+ggplot(seaLevelM, aes(x = Year, y = Monthly_MSL, fill = Month)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = "Sea Level Rise in Miami Coast",
+       subtitle = "Jan 2010 - April, 2021",
+       x = "Year",
+       y = "Mean Sea Level Rise (in)",
+       caption = "Source: NOAA")
+```
+
+```{r}
+ggplot(rainy_days, aes(x = INVERT_Z1, y = INVERT_Z2)) +
+  geom_point() +
+  labs(title = "Change in water level by Vertical Datum",
+       subtitle = "Storm Water Line in Miami",
+       x = "Datum level1",
+       y = "Datum level2",
+       caption = "Source: Miami Dade County")
+```
+
+
+
+```{r}
+summary(mdcClimateCH)
+```
+
+
+```{r}
+mdcClCh
+```
+
+
+

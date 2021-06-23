@@ -1,0 +1,191 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+Install Packages
+
+```{r}
+# install.packages("tidyverse")
+# install.packages("corrplot")
+# install.packages("caTools")
+# install.packages("caret")
+# install.packages("forecast")
+# install.packages("lubridate")
+```
+
+Load Libraries
+```{r}
+library(tidyverse)
+library(corrplot)
+library(caTools)
+library(caret)
+library(forecast)
+library(lubridate)
+```
+
+Load Data File
+```{r}
+library(readr)
+PrecipitationMiami <- read_csv("PrecipitationMiami.csv")
+head(PrecipitationMiami)
+```
+
+Rename Variables and Change data 
+
+```{r}
+precipit_data <- PrecipitationMiami %>%
+            rename(WIND_SPEED = AWND,
+                   TIME_PEAK_GUST = PGTM,
+                   RAIN = PRCP,
+                   SNOW = SNOW,
+                   TEMP_AVG = TAVG,
+                   TEMP_MAX = TMAX,
+                   TEMP_MIN = TMIN,
+                   OBS_TEMP = TOBS,
+                   DIR_2MIN_WIND = WDF2,
+                   DIR_5MIN_WIND = WDF5,
+                   FAST_2MIN_WIND = WSF2,
+                   FAST_5MIN_WIND = WSF5,
+                   ) %>%
+            mutate(STATION = as.factor(STATION),
+                   DATE = as.Date(DATE, "%m/%d/%Y"),
+                   NAME = as.factor(NAME),
+                   ELEVATION = as.factor(ELEVATION),
+                   )
+precipit_data
+```
+```{r}
+summary(prepMDC)
+```
+```{r}
+rainy_days0 <- prepMDC %>% 
+  filter(PRCP > 0)
+rainy_days0
+```
+
+```{r}
+
+```
+
+```{r}
+rain0 <- ggplot(rainy_days0, aes(x = PRCP, fill = STATION)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 8, show.legend = FALSE) +
+  labs(title = "Boxplot: Rain Presipitation in Miami Beach",
+       subtitle = "Jan2021 - May 2021",
+       x = "Rain (in)",
+       caption = "Source: NOAA")
+rain0
+```
+
+We can observe that the amount of rain presipitation is very low for the half of the year. 
+
+```{r}
+summary(rainy_days0)
+```
+
+
+
+```{r}
+ggplot(rainy_days0, aes(y = STATION, x = PRCP, fill = STATION)) +
+  geom_col(show.legend = FALSE) +
+  theme(axis.text.x = element_text(angle =90)) +
+  labs(title = "Rain by Station in Miami Beach",
+       subtitle = "Jan - May, 2021",
+       x = "Station",
+       y = "Rain Precipitation (ml)",
+       caption = "Source: NOAA")
+```
+
+
+```{r}
+rainy_days1_thirdQ <- prepMDC %>% 
+  filter(PRCP > 0.06)
+rainy_days1_thirdQ
+```
+
+
+```{r}
+ggplot(rainy_days1_thirdQ, aes(x = PRCP , fill = STATION, alpha = 0.7)) +
+  geom_density(show.legend = FALSE) +
+  labs(title = "Density: Rain presipitation per Station",
+       subtitle = "Miami Beach",
+       x = " Rain Presipitation",
+       y = "Density",
+       caption = "Source: NOAA")
+```
+
+Sea Level
+
+```{r}
+library(readr)
+SealevelKeywest <- read_csv("~/Capstone/DataFinish/SealevelKeywest.csv")
+head(SealevelKeywest)
+```
+```{r}
+summary(SealevelKeywest)
+```
+
+```{r}
+slk <- ggplot(SealevelKeywest, aes(x = Year, y = Monthly_MSL, fill = Month)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = "Sea Level Rise in Miami Coast",
+       subtitle = "Jan 1913 - April, 2021",
+       x = "Year",
+       y = "Mean Sea Level Rise",
+       caption = "Source: NOAA")
+slk
+```
+```{r}
+sl <- SealevelKeywest %>% 
+  filter(Year > 2000)
+sl
+```
+```{r}
+sl2000 <- ggplot(sl, aes(x = Year, y = Monthly_MSL, fill = Month)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = "Sea Level Rise in Miami Coast",
+       subtitle = "Jan 2000 - April, 2021",
+       x = "Year",
+       y = "Mean Sea Level Rise",
+       caption = "Source: NOAA")
+sl2000
+```
+
+
+Stormwater Line 
+
+```{r}
+library(readr)
+Stormwater_Line <- read_csv("Stormwater_Line.csv")
+head(Stormwater_Line)
+```
+
+```{r}
+stormwater <- Stormwater_Line 
+stormwater[,sapply(stormwater, is.character)] <- lapply(stormwater[,sapply(stormwater, is.character)], as.factor)
+stormwater
+```
+
+```{r}
+summary(stormwater$SOURCEDATE)
+```
+
+```{r}
+summary(swBa)
+```
+
+Vertical Datums
+A vertical datum is a surface of zero elevation to which heights of various points are referenced. Traditionally, vertical datums have used classical survey methods to measure height differences (i.e. geodetic leveling) to best fit the surface of the earth.
+
+
+```{r}
+vd <- ggplot(swBa, aes(x = INVERT_Z1,y = INVERT_Z2,color = TYPE)) +
+  geom_point() +
+  labs(title = "Change in water level by Vertical Datum",
+       subtitle = "Storm Water Line in Miami",
+       x = "Datum level1",
+       y = "Datum level2",
+       caption = "Source: Miami Dade County")
+vd
+```
+

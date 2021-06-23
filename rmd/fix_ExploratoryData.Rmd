@@ -1,0 +1,48 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Exploratory Analysis
+
+
+```{r}
+precipit_data
+```
+
+
+
+
+```{r}
+summary(precipit_data$RAIN)
+```
+
+
+```{r}
+rainy_days <- precipit_data %>%
+  filter(RAIN > 0)
+summary(rainy_days)
+```
+
+
+
+```{r}
+rainy_days_third_quartile <- precipit_data %>%
+  filter(RAIN > 0.62)
+summary(rainy_days_third_quartile)
+```
+
+
+```{r}
+ggplot(rainy_days, aes(x = RAIN, fill = NAME)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 8, show.legend = FALSE) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())+
+  labs(title = "Boxplot:Presipitation in Miami Beach (2021 Jan-May)",
+       subtitle = "Colored by Substation",
+       x = "Rain (in)",
+       caption = "Source: NOAA")
+```
+
+
+
+
