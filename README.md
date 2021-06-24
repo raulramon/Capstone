@@ -54,4 +54,11 @@ For the Precision value of 57% means that label of 179,270 of 254,769 of the tot
 In terms of the Recall value is 40% means that 102799 of every 254,769 event, in reality, are missed by our model and 60% are correctly identified as a flood event.
 Also the Specificity value is 46% means that 34,741of every 254,769flood event in reality are miss-labeled as flood.
 
+#Conclusion
+The variables use was three to evaluate the probability of flooding event base on vertical datum. The first approach was using the KNN model analysis, the situation with the data drive me to change the method but not the target. Because of the intercept of the log-odds of survival for flood or not-flood (reference group) is negative (-1.16) indicated that the cause of poor drainage system can be the principal factor for flooding. Nevertheless, the accuracy was expected higher like in the Knn model from the Sang study [17].
+
+#Future Work
+
+For future work, this study is a starting point to try other model with the data that can present new results. One possibility could be to format the data with additional time in other to run the KNN model properly for better accuracy results.
+
 
